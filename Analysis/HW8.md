@@ -172,19 +172,19 @@ head(data1)
 #Task 2
 For a single day, plot the distributions of ‘number of impressions’ and ‘click-through-rate’ by Age_Group. (CTR = clicks/impressions).
 
-2.1) Create a subset of data1 to exclude rows where there are no impressions (if there are no impressions, we assume there will be no clicks). Name the new object d1
+2.1) Create a subset of data1 to exclude rows where there are no impressions (if there are no impressions, we assume there will be no clicks). Name the new object ImpSub
 
 
 ```r
-d1 <- subset(data1, Impressions>0)
+ImpSub <- subset(data1, Impressions>0)
 ```
-2.2) Add a column to d1 called CTR containing the click-through-rate
+2.2) Add a column to ImpSub called CTR containing the click-through-rate
 
 
 ```r
-d1$CTR <- d1$Clicks/d1$Impressions
+ImpSub$CTR <- ImpSub$Clicks/ImpSub$Impressions
 
-head(d1)
+head(ImpSub)
 ```
 
 ```
@@ -202,7 +202,7 @@ head(d1)
 
 ```r
 library(ggplot2) # used for visualizations
-ggplot(subset(d1, Impressions>0), aes(x=Impressions, fill=Age_Group))+
+ggplot(subset(ImpSub, Impressions>0), aes(x=Impressions, fill=Age_Group))+
     geom_histogram(binwidth=1)
 ```
 
@@ -212,7 +212,7 @@ ggplot(subset(d1, Impressions>0), aes(x=Impressions, fill=Age_Group))+
 
 
 ```r
-ggplot(subset(d1, CTR>0), aes(x=CTR, fill=Age_Group))+
+ggplot(subset(ImpSub, CTR>0), aes(x=CTR, fill=Age_Group))+
     labs(title="Click-through rate by age group (05/01/2012)")+
     geom_histogram(binwidth=.025)
 ```
@@ -222,10 +222,260 @@ ggplot(subset(d1, CTR>0), aes(x=CTR, fill=Age_Group))+
 #Plot the distribution of CTR and Age Group
 
 ```r
-ggplot(subset(d1, CTR>0), aes(x=CTR, fill=Age_Group))+
+ggplot(subset(ImpSub, CTR>0), aes(x=CTR, fill=Age_Group))+
     labs(title="Click-through rate by age group (05/14/2012)")+
     geom_histogram(binwidth=.025)
 ```
 
 ![](HW8_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
 
+# Define a new variable to segment user based on click-through-rate (CTR) behavior
+
+
+```r
+ImpSub$CTR_Group <- cut(ImpSub$CTR, c(-Inf, 0.2, 0.4, 0.6, 0.8, Inf))
+
+levels(ImpSub$CTR_Group) <- c("<0.2", "0.2-0.4", "0.4-0.6", "0.6-0.8", "0.8+")
+# Name the levels of 'CTR_Group' for readability
+```
+#TIDY DATA
+Remove Age with values of zero
+
+```r
+ImpSub<-subset(ImpSub,ImpSub$Age>0)
+```
+
+# Get the total number of Male, Impressions, Clicks and Signed-in (0=Female, 1=Male)
+Number of Male users
+
+```r
+sum(ImpSub$Gender == 1)
+```
+
+```
+## [1] 167146
+```
+Number of Impressions
+
+```r
+sum(ImpSub$Impression)
+```
+
+```
+## [1] 1610076
+```
+Number of Clicks
+
+```r
+sum(ImpSub$Clicks)
+```
+
+```
+## [1] 22969
+```
+Number of Signed-in
+
+```r
+sum(ImpSub$Signed_In)
+```
+
+```
+## [1] 319198
+```
+
+# Get the mean of Age, Impression, Clicks, CTR and percentage of males and signed-in
+Average Age
+
+```r
+mean(ImpSub$Age)
+```
+
+```
+## [1] 42.06255
+```
+Average Impression
+
+```r
+mean(ImpSub$Impressions)
+```
+
+```
+## [1] 5.044129
+```
+Average Clicks
+
+```r
+mean(ImpSub$Clicks)
+```
+
+```
+## [1] 0.07195847
+```
+Average CTR
+
+```r
+mean(ImpSub$CTR)
+```
+
+```
+## [1] 0.01425364
+```
+Average % of Males
+
+```r
+100 * sum(ImpSub$Gender==1)/length(ImpSub$Gender)
+```
+
+```
+## [1] 52.36436
+```
+Average % of Signed_in
+
+```r
+100 * sum(ImpSub$Signed_In)/length(ImpSub$Gender)
+```
+
+```
+## [1] 100
+```
+
+# Get the means of Impression, Clicks, CTR and percentage of males and signed_in by AgeGroup
+
+Mean of Impressions by AgeGroup
+
+```r
+aggregate(ImpSub$Impressions,list(ImpSub$Age_Group),mean)
+```
+
+```
+##   Group.1        x
+## 1     <18 5.031894
+## 2   18-24 5.043240
+## 3   25-34 5.026055
+## 4   35-44 5.054749
+## 5   45-54 5.045172
+## 6   55-64 5.053484
+## 7     65+ 5.046925
+```
+Mean of Clicks by AgeGroup
+
+```r
+aggregate(ImpSub$Clicks,list(ImpSub$Age_Group),mean)
+```
+
+```
+##   Group.1          x
+## 1     <18 0.13191467
+## 2   18-24 0.04880905
+## 3   25-34 0.05081227
+## 4   35-44 0.05202148
+## 5   45-54 0.05062260
+## 6   55-64 0.10246952
+## 7     65+ 0.15233226
+```
+Mean of CTR by AgeGroup
+
+```r
+aggregate(ImpSub$CTR,list(ImpSub$Age_Group),mean)
+```
+
+```
+##   Group.1           x
+## 1     <18 0.026620504
+## 2   18-24 0.009720481
+## 3   25-34 0.010146329
+## 4   35-44 0.010286330
+## 5   45-54 0.009957612
+## 6   55-64 0.020306816
+## 7     65+ 0.029802702
+```
+Percentage of Males by AgeGroup
+
+```r
+mAgetotal <- aggregate(ImpSub$Gender == 1,list(ImpSub$Age_Group), sum)
+ mAgelength<- aggregate(ImpSub$Age_Group, list(ImpSub$Age_Group), length)
+merged <- merge(mAgetotal,mAgelength,by="Group.1")
+names(merged) <- c("AgeGroup","MalesTotal","Total")
+merged$pct <- round(100 * merged$MalesTotal/merged$Total,2)
+merged
+```
+
+```
+##   AgeGroup MalesTotal Total   pct
+## 1      <18      12279 19126 64.20
+## 2    18-24      18697 35014 53.40
+## 3    25-34      30750 57801 53.20
+## 4    35-44      37429 70394 53.17
+## 5    45-54      33788 63845 52.92
+## 6    55-64      23830 44462 53.60
+## 7      65+      10373 28556 36.33
+```
+Percentage of Signed_in by AgeGroup
+
+```r
+meanSigned <- aggregate(ImpSub$Signed_In == 1,list(ImpSub$Age_Group), sum)
+mAgelength <- aggregate(ImpSub$Age_Group, list(ImpSub$Age_Group), length)
+merged <- merge(meanSigned,mAgelength,by="Group.1")
+names(merged) <- c("AgeGroup","SignedTotal","Total")
+merged$pct <- round(100 * merged$SignedTotal/merged$Total,2)
+merged
+```
+
+```
+##   AgeGroup SignedTotal Total pct
+## 1      <18       19126 19126 100
+## 2    18-24       35014 35014 100
+## 3    25-34       57801 57801 100
+## 4    35-44       70394 70394 100
+## 5    45-54       63845 63845 100
+## 6    55-64       44462 44462 100
+## 7      65+       28556 28556 100
+```
+# Create a table of CTRGroup vs AgeGroup counts
+
+```r
+table(ImpSub$CTR_Group, ImpSub$Age_Group)
+```
+
+```
+##          
+##             <18 18-24 25-34 35-44 45-54 55-64   65+
+##   <0.2    18339 34540 56980 69424 62936 43147 27261
+##   0.2-0.4   640   391   689   820   776  1104  1108
+##   0.4-0.6   121    68   106   118   113   168   156
+##   0.6-0.8     6     2     7     4     0     7    10
+##   0.8+       20    13    19    28    20    36    21
+```
+
+# Plot distribution of number impressions and click-through-rate (CTR=click/impression) for the age groups
+
+```r
+#Plot of Impression
+qplot(ImpSub$Impressions, main ="Impressions", fill=ImpSub$Age_Group)
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](HW8_files/figure-html/unnamed-chunk-37-1.png)<!-- -->
+
+```r
+#Plot of CTR
+qplot(ImpSub$CTR, main="CTR", fill=ImpSub$Age_Group)
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](HW8_files/figure-html/unnamed-chunk-37-2.png)<!-- -->
+
+# One more plot you think which is important to look at. 
+
+```r
+qplot(ImpSub$Gender==0, data=ImpSub, fill=Age_Group, 
+      main="Males and Females by AgeGroup")
+```
+
+![](HW8_files/figure-html/unnamed-chunk-38-1.png)<!-- -->
